@@ -24,6 +24,7 @@
     <ProjectGuid>{9dd81857-a14d-4ee3-89df-1d300106d3bd}</ProjectGuid>
     <RootNamespace>HelloWorldOpenGl</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>OpenGL-LetterE</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -133,7 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\glad\src\glad.c" />
-    <ClCompile Include="HelloOpenGL.cpp" />
+    <ClCompile Include="OpenGL-LetterE.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

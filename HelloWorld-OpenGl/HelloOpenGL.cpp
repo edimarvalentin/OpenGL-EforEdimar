@@ -28,11 +28,31 @@ void processInput(GLFWwindow* window);
 // Vertices
 // ________________________________________________
 
-// Triangle
+// E
 float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
+	-0.5f,  0.5f, 0.0f, //0
+	 0.5f,  0.5f, 0.0f, //1
+	-0.3f,  0.3f, 0.0f, //2
+	 0.5f,  0.3f, 0.0f, //3
+	-0.3f,  0.1f, 0.0f, //4
+	 0.5f,  0.1f, 0.0f, //5
+	-0.3f, -0.1f, 0.0f, //6
+	 0.5f, -0.1f, 0.0f, //7
+	-0.3f, -0.3f, 0.0f, //8
+	 0.5f, -0.3f, 0.0f, //9
+	-0.5f, -0.5f, 0.0f, //10
+	 0.5f, -0.5f, 0.0f  //11
+};
+
+unsigned int indices[] = {
+	0, 1, 3,
+	0, 2, 3,
+	4, 6, 7,
+	5, 4, 7,
+	8, 10, 11,
+	9, 8, 11,
+	10, 8, 0,
+	0, 2, 8
 };
 
 // OpenGL Shading Language
@@ -49,7 +69,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"FragColor = vec4(1.0f, 0.5f, 0.2, 1.0f);\n"
+"FragColor = vec4(0.4f, 0.8f, 0.0f, 1.0f);\n"
 "}\0";
 
 
@@ -71,7 +91,7 @@ int main() {
 	// Create and store the window object. 
 	// Parameters: width, height, window's name, GLFWmonitor* monitor, GLFWwindow* share 
 	// ____________________________________________
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Hello OpenGl", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "E for Edimar", NULL, NULL);
 	
 	// This is C++ and we're on our own. We need to handle our own errors. 
 	// If the windows couldn't be created, then terminate the program and free up the resources 
@@ -132,6 +152,14 @@ int main() {
 	// _____________________________________________
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	// Element Buffer Object:
+	// A buffer to store indices that allow us to performed indexed drawing
+	// _____________________________________________
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 	// GRAPHICS PIPELINE: 
 	// VERTEX SHADER
 	// OpenGL require us to define and compile our own shaders using the OpenGL Shading Language.
@@ -182,7 +210,6 @@ int main() {
 	// Shader Program
 	// The shader program is the linked version of multiple shaders combined.
 	// _____________________________________________
-
 	unsigned int shaderProgram;
 	shaderProgram = glCreateProgram();
 
@@ -217,6 +244,9 @@ int main() {
 
 	glBindVertexArray(VAO);
 
+	// Uncomment this following line for Wireframe mode:
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// The render loop
 	// _____________________________________________
 	while (!glfwWindowShouldClose(window)) {
@@ -229,7 +259,7 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
 		// Double buffer:
 		// When an application draws in a single buffer the resulting image may
@@ -249,6 +279,12 @@ int main() {
 		glfwPollEvents();
 	}
 
+
+	// De-allocate all resources once they've outlived their purpose:
+	// -----------------------------------------
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(shaderProgram);
 
 	// Clear all of GLFW's resources that were allocated
 	// ________________________________________

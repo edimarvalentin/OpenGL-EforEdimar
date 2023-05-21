@@ -67,9 +67,10 @@ const char* vertexShaderSource = "#version 330 core\n"
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
+"uniform vec4 ourColor;\n" //Uniforms are another way to pass data from our application on the CPU to the shaders on the GPU. 
 "void main()\n"
 "{\n"
-"FragColor = vec4(0.4f, 0.8f, 0.0f, 1.0f);\n"
+"FragColor = ourColor;\n"
 "}\0";
 
 
@@ -92,12 +93,12 @@ int main() {
 	// Parameters: width, height, window's name, GLFWmonitor* monitor, GLFWwindow* share 
 	// ____________________________________________
 	GLFWwindow* window = glfwCreateWindow(800, 600, "E for Edimar", NULL, NULL);
-	
+
 	// This is C++ and we're on our own. We need to handle our own errors. 
 	// If the windows couldn't be created, then terminate the program and free up the resources 
 	// we allocated.
 	// ____________________________________________
-	if(window == NULL){
+	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
@@ -242,8 +243,6 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(VAO);
-
 	// Uncomment this following line for Wireframe mode:
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -259,6 +258,13 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		float timeValue = glfwGetTime();
+		float redValue = (sin(timeValue) / 2.0f) + 0.5f;
+		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+		glUseProgram(shaderProgram);
+		glUniform4f(vertexColorLocation, redValue, 0.0f, 0.0f, 1.0f);
+
+		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
 		// Double buffer:

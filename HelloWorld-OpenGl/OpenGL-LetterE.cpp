@@ -20,6 +20,8 @@
 // ________________________________________________
 #include <iostream>
 
+#include "shader.h"
+
 // Prototype declarations
 // ________________________________________________
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -54,25 +56,6 @@ unsigned int indices[] = {
 	10, 8, 0,
 	0, 2, 8
 };
-
-// OpenGL Shading Language
-// A language for creating our own shaders.
-// ________________________________________________
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"uniform vec4 ourColor;\n" //Uniforms are another way to pass data from our application on the CPU to the shaders on the GPU. 
-"void main()\n"
-"{\n"
-"FragColor = ourColor;\n"
-"}\0";
-
 
 int main() {
 	// This function initializes the GLFW library. Before most GLFW functions can 
@@ -161,84 +144,8 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// GRAPHICS PIPELINE: 
-	// VERTEX SHADER
-	// OpenGL require us to define and compile our own shaders using the OpenGL Shading Language.
-	// OpenGL has to dynamically compile this langauge from its source code.
-	// _____________________________________________
+	Shader* shader = new Shader("vertex.glsl", "fragment.glsl");
 
-	// Create a shader object
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	// Compile the source code into the shader
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	// We can check if errors were generated while compiling the source code
-	// for the shader. Good for error handling
-	int success;
-	char infoLog[512];
-
-	// Fetches the status of post-compilation
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	// If no success, get the error message
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" <<
-			infoLog << std::endl;
-	}
-	// GRAPHICS PIPELINE: 
-	// VERTEX SHADER
-	// Create shader object, load the source code and compile
-	// ____________________________________________
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	// Check for errors
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
-			infoLog << std::endl;
-	}
-
-	// GRAPHICS PIPELINE: 
-	// Shader Program
-	// The shader program is the linked version of multiple shaders combined.
-	// _____________________________________________
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// Check for post-link status
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" <<
-			infoLog << std::endl;
-	}
-
-	// Activate program
-	// Every shader amd reneding call after this now use this object.
-	glUseProgram(shaderProgram);
-
-	// Once the shaders were linked into the program, they're no longer needed and can be deleted.
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	// Linking Vertex Attributes
-	// The GPU has the vertex data and the shaders but is doesn't know how our vertex data is formatted.
-	// Our vertex data is formatted as an array of floats, where every float takes 4 bytes of space.
-	// That means that every vertex, that has x, y, and z contains 12 bytes of space.
 	// _____________________________________________
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -260,8 +167,8 @@ int main() {
 
 		float timeValue = glfwGetTime();
 		float redValue = (sin(timeValue) / 2.0f) + 0.5f;
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUseProgram(shaderProgram);
+		int vertexColorLocation = glGetUniformLocation(shader->ID, "ourColor");
+		shader->use();
 		glUniform4f(vertexColorLocation, redValue, 0.0f, 0.0f, 1.0f);
 
 		glBindVertexArray(VAO);
@@ -290,7 +197,6 @@ int main() {
 	// -----------------------------------------
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
 
 	// Clear all of GLFW's resources that were allocated
 	// ________________________________________

@@ -22,6 +22,8 @@
 
 #include "shader.h"
 
+#include "texture.h"
+
 // Prototype declarations
 // ________________________________________________
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -32,18 +34,18 @@ void processInput(GLFWwindow* window);
 
 // E
 float vertices[] = {
-	-0.5f,  0.5f, 0.0f, //0
-	 0.5f,  0.5f, 0.0f, //1
-	-0.3f,  0.3f, 0.0f, //2
-	 0.5f,  0.3f, 0.0f, //3
-	-0.3f,  0.1f, 0.0f, //4
-	 0.5f,  0.1f, 0.0f, //5
-	-0.3f, -0.1f, 0.0f, //6
-	 0.5f, -0.1f, 0.0f, //7
-	-0.3f, -0.3f, 0.0f, //8
-	 0.5f, -0.3f, 0.0f, //9
-	-0.5f, -0.5f, 0.0f, //10
-	 0.5f, -0.5f, 0.0f  //11
+	-0.5f,  0.5f, 0.0f, 0.0f, 1.0f, //0
+	 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, //1
+	-0.3f,  0.3f, 0.0f, 0.2f, 0.8f, //2
+	 0.5f,  0.3f, 0.0f, 1.0f, 0.8f, //3
+	-0.3f,  0.1f, 0.0f, 0.2f, 0.6f, //4
+	 0.5f,  0.1f, 0.0f, 1.0f, 0.6f, //5
+	-0.3f, -0.1f, 0.0f, 0.2f, 0.4f, //6
+	 0.5f, -0.1f, 0.0f, 1.0f, 0.4f, //7
+	-0.3f, -0.3f, 0.0f, 0.2f, 0.2f, //8
+	 0.5f, -0.3f, 0.0f, 1.0f, 0.2f, //9
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, //10
+	 0.5f, -0.5f, 0.0f, 1.0f, 0.0f  //11
 };
 
 unsigned int indices[] = {
@@ -146,9 +148,18 @@ int main() {
 
 	Shader* shader = new Shader("vertex.glsl", "fragment.glsl");
 
+	// Position Attribute 
 	// _____________________________________________
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// Texture Coord Attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+
+	//Texture
+	Texture* texture = new Texture("circuitboard.jpg");
 
 	// Uncomment this following line for Wireframe mode:
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -164,6 +175,8 @@ int main() {
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		texture->use();
 
 		float timeValue = glfwGetTime();
 		float redValue = (sin(timeValue) / 2.0f) + 0.5f;

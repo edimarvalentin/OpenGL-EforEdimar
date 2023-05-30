@@ -20,6 +20,10 @@
 // ________________________________________________
 #include <iostream>
 
+#include "shader.h"
+
+#include "texture.h"
+
 // Prototype declarations
 // ________________________________________________
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -30,18 +34,18 @@ void processInput(GLFWwindow* window);
 
 // E
 float vertices[] = {
-	-0.5f,  0.5f, 0.0f, //0
-	 0.5f,  0.5f, 0.0f, //1
-	-0.3f,  0.3f, 0.0f, //2
-	 0.5f,  0.3f, 0.0f, //3
-	-0.3f,  0.1f, 0.0f, //4
-	 0.5f,  0.1f, 0.0f, //5
-	-0.3f, -0.1f, 0.0f, //6
-	 0.5f, -0.1f, 0.0f, //7
-	-0.3f, -0.3f, 0.0f, //8
-	 0.5f, -0.3f, 0.0f, //9
-	-0.5f, -0.5f, 0.0f, //10
-	 0.5f, -0.5f, 0.0f  //11
+	-0.5f,  0.5f, 0.0f, 0.0f, 1.0f, //0
+	 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, //1
+	-0.3f,  0.3f, 0.0f, 0.2f, 0.8f, //2
+	 0.5f,  0.3f, 0.0f, 1.0f, 0.8f, //3
+	-0.3f,  0.1f, 0.0f, 0.2f, 0.6f, //4
+	 0.5f,  0.1f, 0.0f, 1.0f, 0.6f, //5
+	-0.3f, -0.1f, 0.0f, 0.2f, 0.4f, //6
+	 0.5f, -0.1f, 0.0f, 1.0f, 0.4f, //7
+	-0.3f, -0.3f, 0.0f, 0.2f, 0.2f, //8
+	 0.5f, -0.3f, 0.0f, 1.0f, 0.2f, //9
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, //10
+	 0.5f, -0.5f, 0.0f, 1.0f, 0.0f  //11
 };
 
 unsigned int indices[] = {
@@ -54,24 +58,6 @@ unsigned int indices[] = {
 	10, 8, 0,
 	0, 2, 8
 };
-
-// OpenGL Shading Language
-// A language for creating our own shaders.
-// ________________________________________________
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-" gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"FragColor = vec4(0.4f, 0.8f, 0.0f, 1.0f);\n"
-"}\0";
-
 
 int main() {
 	// This function initializes the GLFW library. Before most GLFW functions can 
@@ -92,12 +78,12 @@ int main() {
 	// Parameters: width, height, window's name, GLFWmonitor* monitor, GLFWwindow* share 
 	// ____________________________________________
 	GLFWwindow* window = glfwCreateWindow(800, 600, "E for Edimar", NULL, NULL);
-	
+
 	// This is C++ and we're on our own. We need to handle our own errors. 
 	// If the windows couldn't be created, then terminate the program and free up the resources 
 	// we allocated.
 	// ____________________________________________
-	if(window == NULL){
+	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
@@ -160,89 +146,20 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// GRAPHICS PIPELINE: 
-	// VERTEX SHADER
-	// OpenGL require us to define and compile our own shaders using the OpenGL Shading Language.
-	// OpenGL has to dynamically compile this langauge from its source code.
+	Shader* shader = new Shader("vertex.glsl", "fragment.glsl");
+
+	// Position Attribute 
 	// _____________________________________________
-
-	// Create a shader object
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	// Compile the source code into the shader
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	// We can check if errors were generated while compiling the source code
-	// for the shader. Good for error handling
-	int success;
-	char infoLog[512];
-
-	// Fetches the status of post-compilation
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	// If no success, get the error message
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" <<
-			infoLog << std::endl;
-	}
-	// GRAPHICS PIPELINE: 
-	// VERTEX SHADER
-	// Create shader object, load the source code and compile
-	// ____________________________________________
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	// Check for errors
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
-			infoLog << std::endl;
-	}
-
-	// GRAPHICS PIPELINE: 
-	// Shader Program
-	// The shader program is the linked version of multiple shaders combined.
-	// _____________________________________________
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// Check for post-link status
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" <<
-			infoLog << std::endl;
-	}
-
-	// Activate program
-	// Every shader amd reneding call after this now use this object.
-	glUseProgram(shaderProgram);
-
-	// Once the shaders were linked into the program, they're no longer needed and can be deleted.
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	// Linking Vertex Attributes
-	// The GPU has the vertex data and the shaders but is doesn't know how our vertex data is formatted.
-	// Our vertex data is formatted as an array of floats, where every float takes 4 bytes of space.
-	// That means that every vertex, that has x, y, and z contains 12 bytes of space.
-	// _____________________________________________
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(VAO);
+	// Texture Coord Attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+
+	//Texture
+	Texture* texture = new Texture("circuitboard.jpg");
 
 	// Uncomment this following line for Wireframe mode:
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -259,6 +176,15 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		texture->use();
+
+		float timeValue = glfwGetTime();
+		float redValue = (sin(timeValue) / 2.0f) + 0.5f;
+		int vertexColorLocation = glGetUniformLocation(shader->ID, "ourColor");
+		shader->use();
+		glUniform4f(vertexColorLocation, redValue, 0.0f, 0.0f, 1.0f);
+
+		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, 0);
 
 		// Double buffer:
@@ -284,7 +210,6 @@ int main() {
 	// -----------------------------------------
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
 
 	// Clear all of GLFW's resources that were allocated
 	// ________________________________________
